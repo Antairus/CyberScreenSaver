@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CYBER-CORE // NETWORK TOPOLOGY</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: #000; overflow: hidden; cursor: none; font-family: 'Courier New', monospace; }
+canvas { display: block; }
+body::after {
+  content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.06) 2px, rgba(0,0,0,0.06) 4px);
+  pointer-events: none; z-index: 99;
+}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let W, H, frame = 0;
+let nodes = [], packets = [], hexBlocks = [];
+
+const C = {
+  bg: '#000000',
+  grid: 'rgba(0, 80, 30, 0.12)',
+  gridMajor: 'rgba(0, 80, 30, 0.22)',
+  faint: '#014020',
+  dim: '#02A060',
+  med: '#056930',
+  bright: '#00FF80',
+  glow: '#00FFB4',
+  accent: '#04FF9A',
+  amber: '#FFA820',
+};
+
+const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+const DAYS = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+
+const NODE_NAMES = [
+  'CORE-SRV', 'WEB-NODE', 'DEV-BOX', 'AI-NODE', 'NAS-01',
+  'FIREWALL', 'HYPERVISOR', 'SWITCH-10G', 'AP-MESH', 'CAM-01',
+  'CAM-02', 'CONTAINER-01', 'MQTT', 'LLM-HOST', 'MAIL-SRV',
+  'PROXY-GW', 'DNS-01', 'WIKI-SRV', 'MONITOR-7', 'WOL-AGENT'
+];
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+  initNodes();
+}
+
+function initNodes() {
+  nodes = [];
+  const count = Math.min(20, Math.floor((W * H) / 40000));
+  const margin = 80;
+
+  for (let i = 0; i < count; i++) {
+    const angle = (i / count) * Math.PI * 2;
+    const radiusX = (W / 2 - margin * 2) * (0.3 + Math.random() * 0.6);
+    const radiusY = (H / 2 - margin * 2) * (0.3 + Math.random() * 0.6);
+    nodes.push({
+      x: W / 2 + Math.cos(angle) * radiusX,
+      y: H / 2 + Math.sin(angle) * radiusY,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      radius: 4 + Math.random() * 4,
+      pulsePhase: Math.random() * Math.PI * 2,
+      name: NODE_NAMES[i % NODE_NAMES.length],
+      active: Math.random() > 0.2,
+      connections: [],
+    });
+  }
+
+  // Build connections (nearest neighbors)
+  for (let i = 0; i < nodes.length; i++) {
+    const dists = [];
+    for (let j = 0; j < nodes.length; j++) {
+      if (i === j) continue;
+      const dx = nodes[i].x - nodes[j].x;
+      const dy = nodes[i].y - nodes[j].y;
+      dists.push({ idx: j, d: Math.sqrt(dx * dx + dy * dy) });
+    }
+    dists.sort((a, b) => a.d - b.d);
+    nodes[i].connections = dists.slice(0, 2 + Math.floor(Math.random() * 2)).map(d => d.idx);
+  }
+
+  packets = [];
+  hexBlocks = [];
+  // Init hex blocks in corners
+  for (let i = 0; i < 4; i++) {
+    const bx = i < 2 ? 14 : W - 230;
+    const by = i % 2 === 0 ? 42 : H - 140;
+    hexBlocks.push({ x: bx, y: by, lines: generateHex(), nextUpdate: 0 });
+  }
+}
+
+function generateHex() {
+  const lines = [];
+  for (let r = 0; r < 8; r++) {
+    let line = '0x' + (0xA000 + r * 16).toString(16).toUpperCase() + '  ';
+    for (let c = 0; c < 8; c++) {
+      line += Math.floor(Math.random() * 256).toString(16).toUpperCase().padStart(2, '0') + ' ';
+    }
+    lines.push(line);
+  }
+  return lines;
+}
+
+function spawnPacket() {
+  if (nodes.length < 2) return;
+  const from = Math.floor(Math.random() * nodes.length);
+  if (nodes[from].connections.length === 0) return;
+  const to = nodes[from].connections[Math.floor(Math.random() * nodes[from].connections.length)];
+  const isAmber = Math.random() < 0.15;
+  packets.push({
+    from, to, t: 0,
+    speed: 0.008 + Math.random() * 0.012,
+    color: isAmber ? C.amber : C.glow,
+    size: 2 + Math.random() * 2,
+  });
+}
+
+function drawGrid() {
+  ctx.strokeStyle = C.grid;
+  ctx.lineWidth = 0.5;
+  for (let x = 0; x < W; x += 20) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+  for (let y = 0; y < H; y += 20) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+  ctx.strokeStyle = C.gridMajor;
+  for (let x = 0; x < W; x += 100) {
+    ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+  }
+  for (let y = 0; y < H; y += 100) {
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+}
+
+function drawChrome() {
+  // Top bar
+  ctx.fillStyle = C.accent;
+  ctx.fillRect(0, 0, W, 3);
+  ctx.fillStyle = C.bg;
+  ctx.fillRect(0, 3, W, 28);
+  ctx.strokeStyle = C.med;
+  ctx.beginPath(); ctx.moveTo(0, 31); ctx.lineTo(W, 31); ctx.stroke();
+
+  ctx.font = '11px Courier New';
+  ctx.fillStyle = C.dim;
+  ctx.fillText('CLASSIFICATION:', 12, 14);
+  ctx.fillStyle = C.bright;
+  ctx.fillText('ACTIVE', 120, 14);
+  ctx.fillStyle = C.faint;
+  ctx.fillText('TERMINAL 7 // CYBER-CORE v2.0', 12, 26);
+
+  // Clock center
+  const now = new Date();
+  const timeStr = [now.getHours(), now.getMinutes(), now.getSeconds()]
+    .map(v => String(v).padStart(2, '0')).join(':');
+  const dateStr = `${String(now.getDate()).padStart(2,'0')} ${MONTHS[now.getMonth()]} ${now.getFullYear()} // ${DAYS[now.getDay()]}`;
+  ctx.textAlign = 'center';
+  ctx.fillStyle = C.glow;
+  ctx.fillText(timeStr, W / 2, 14);
+  ctx.fillStyle = C.dim;
+  ctx.fillText(dateStr, W / 2, 26);
+  ctx.textAlign = 'left';
+
+  ctx.fillStyle = C.accent;
+  ctx.textAlign = 'right';
+  ctx.fillText('SYS://NET_TOPOLOGY', W - 12, 14);
+  ctx.fillStyle = C.faint;
+  ctx.fillText('NODE MAP // LIVE', W - 12, 26);
+  ctx.textAlign = 'left';
+
+  // Bottom bar
+  const by = H - 20;
+  ctx.strokeStyle = C.med;
+  ctx.beginPath(); ctx.moveTo(0, by); ctx.lineTo(W, by); ctx.stroke();
+  ctx.fillStyle = C.bg;
+  ctx.fillRect(0, by + 1, W, 19);
+  ctx.font = '11px Courier New';
+  ctx.fillStyle = C.dim;
+  ctx.fillText(`NODES: ${nodes.length} ONLINE  //  PACKETS: ${packets.length} IN TRANSIT  //  LATENCY: ${(Math.sin(frame*0.01)*2+3).toFixed(1)}ms`, 12, by + 14);
+  ctx.fillStyle = C.faint;
+  ctx.textAlign = 'right';
+  ctx.fillText('CYBER-CORE // SCREENSAVER MODE', W - 12, by + 14);
+  ctx.textAlign = 'left';
+}
+
+function drawConnections() {
+  ctx.lineWidth = 0.8;
+  for (const node of nodes) {
+    for (const ci of node.connections) {
+      const other = nodes[ci];
+      const grad = ctx.createLinearGradient(node.x, node.y, other.x, other.y);
+      grad.addColorStop(0, 'rgba(2, 160, 96, 0.2)');
+      grad.addColorStop(0.5, 'rgba(2, 160, 96, 0.08)');
+      grad.addColorStop(1, 'rgba(2, 160, 96, 0.2)');
+      ctx.strokeStyle = grad;
+      ctx.beginPath();
+      ctx.moveTo(node.x, node.y);
+      ctx.lineTo(other.x, other.y);
+      ctx.stroke();
+    }
+  }
+}
+
+function drawNodes() {
+  for (let i = 0; i < nodes.length; i++) {
+    const n = nodes[i];
+    const pulse = Math.sin(frame * 0.03 + n.pulsePhase) * 0.5 + 0.5;
+
+    // Glow
+    const glowR = n.radius * 3 + pulse * 8;
+    const grd = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, glowR);
+    grd.addColorStop(0, n.active ? 'rgba(0, 255, 180, 0.15)' : 'rgba(255, 168, 32, 0.1)');
+    grd.addColorStop(1, 'rgba(0, 0, 0, 0)');
+    ctx.fillStyle = grd;
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, glowR, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Outer ring
+    ctx.strokeStyle = n.active ? C.accent : C.amber;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, n.radius + 2 + pulse * 2, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Core
+    ctx.fillStyle = n.active ? C.glow : C.amber;
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, n.radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Inner bright dot
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(n.x, n.y, 1.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Label
+    ctx.font = '10px Courier New';
+    ctx.fillStyle = n.active ? C.dim : C.faint;
+    ctx.textAlign = 'center';
+    ctx.fillText(n.name, n.x, n.y + n.radius + 14);
+    ctx.textAlign = 'left';
+  }
+}
+
+function drawPackets() {
+  for (let i = packets.length - 1; i >= 0; i--) {
+    const p = packets[i];
+    p.t += p.speed;
+    if (p.t >= 1) {
+      // Pulse at destination
+      const dest = nodes[p.to];
+      dest.pulsePhase = frame * 0.03;
+      packets.splice(i, 1);
+      continue;
+    }
+
+    const from = nodes[p.from];
+    const to = nodes[p.to];
+    const x = from.x + (to.x - from.x) * p.t;
+    const y = from.y + (to.y - from.y) * p.t;
+
+    // Trail
+    for (let tr = 1; tr <= 4; tr++) {
+      const tt = p.t - tr * p.speed * 2;
+      if (tt < 0) continue;
+      const tx = from.x + (to.x - from.x) * tt;
+      const ty = from.y + (to.y - from.y) * tt;
+      ctx.fillStyle = p.color === C.amber
+        ? `rgba(255, 168, 32, ${0.15 - tr * 0.03})`
+        : `rgba(0, 255, 180, ${0.15 - tr * 0.03})`;
+      ctx.beginPath();
+      ctx.arc(tx, ty, p.size * 0.6, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Packet
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(x, y, p.size, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Bright center
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(x, y, 1, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawHexBlocks() {
+  ctx.font = '10px Courier New';
+  for (const hb of hexBlocks) {
+    if (frame > hb.nextUpdate) {
+      // Randomly update a few bytes
+      for (let i = 0; i < hb.lines.length; i++) {
+        if (Math.random() < 0.3) {
+          hb.lines[i] = generateHex()[0];
+          hb.lines[i] = '0x' + (0xA000 + i * 16).toString(16).toUpperCase() + '  ';
+          for (let c = 0; c < 8; c++) {
+            hb.lines[i] += Math.floor(Math.random() * 256).toString(16).toUpperCase().padStart(2, '0') + ' ';
+          }
+        }
+      }
+      hb.nextUpdate = frame + 30 + Math.random() * 60;
+    }
+
+    // Box
+    ctx.strokeStyle = C.med;
+    ctx.strokeRect(hb.x - 4, hb.y - 4, 222, hb.lines.length * 12 + 20);
+
+    // Title
+    ctx.fillStyle = C.dim;
+    ctx.fillText('MEMORY REGISTER', hb.x, hb.y + 8);
+    ctx.strokeStyle = C.med;
+    ctx.beginPath();
+    ctx.moveTo(hb.x, hb.y + 12);
+    ctx.lineTo(hb.x + 100, hb.y + 12);
+    ctx.stroke();
+
+    for (let i = 0; i < hb.lines.length; i++) {
+      ctx.fillStyle = C.faint;
+      ctx.fillText(hb.lines[i], hb.x, hb.y + 24 + i * 12);
+    }
+
+    // Blinking cursor
+    if (Math.floor(frame / 15) % 2 === 0) {
+      ctx.fillStyle = C.bright;
+      ctx.fillRect(hb.x + 200, hb.y + 16 + hb.lines.length * 12, 6, 10);
+    }
+  }
+}
+
+function updateNodes() {
+  const margin = 60;
+  for (const n of nodes) {
+    n.x += n.vx;
+    n.y += n.vy;
+    // Gentle drift changes
+    n.vx += (Math.random() - 0.5) * 0.02;
+    n.vy += (Math.random() - 0.5) * 0.02;
+    n.vx *= 0.99;
+    n.vy *= 0.99;
+    // Bounds
+    if (n.x < margin) { n.x = margin; n.vx = Math.abs(n.vx); }
+    if (n.x > W - margin) { n.x = W - margin; n.vx = -Math.abs(n.vx); }
+    if (n.y < margin) { n.y = margin; n.vy = Math.abs(n.vy); }
+    if (n.y > H - margin) { n.y = H - margin; n.vy = -Math.abs(n.vy); }
+  }
+}
+
+function render() {
+  ctx.fillStyle = C.bg;
+  ctx.fillRect(0, 0, W, H);
+
+  drawGrid();
+  drawConnections();
+  drawNodes();
+  drawPackets();
+  drawHexBlocks();
+  drawChrome();
+
+  updateNodes();
+
+  // Spawn packets
+  if (Math.random() < 0.08) spawnPacket();
+
+  frame++;
+  requestAnimationFrame(render);
+}
+
+window.addEventListener('resize', resize);
+resize();
+render();
+</script>
+</body>
+</html>
