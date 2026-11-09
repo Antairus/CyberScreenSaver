@@ -1,0 +1,209 @@
+CYBERSCREENSAVER
+END USER LICENSE AGREEMENT
+Published by KW Tech Solutions LLC
+KingWerx(TM) is a product brand of KW Tech Solutions LLC.
+================================================================
+Version 2.1.0  -  (c) 2026 KW Tech Solutions LLC. All rights reserved.
+
+Please read this agreement carefully. By installing, running, or using
+CyberScreenSaver ("the Software") you agree to these terms. If you do
+not agree, do not install or use the Software.
+
+
+1. WHAT THIS SOFTWARE DOES - AND WHAT IT CHANGES
+------------------------------------------------
+CyberScreenSaver is a Windows screensaver. It draws animated effects on
+each monitor, and the effect shown on each monitor is chosen in its
+Settings window.
+
+THE INSTALLER (it asks for administrator rights) CHANGES THIS COMPUTER:
+  - It copies the screensaver into C:\Windows\System32 as
+    CyberScreenSaver.scr, replacing an earlier copy. Every effect is
+    inside that one entry. It removes CyberOscilloscope.scr,
+    CyberClock.scr, CyberLiveNetwork.scr and CyberNetwork.scr when
+    they are separate entries added by an earlier version of this
+    Software. If Windows was set to one of them, choose
+    CyberScreenSaver again in Screen Saver Settings.
+  - It copies the program, this license, the README and the manual to
+    %ProgramFiles%\KWTechSolutions\CyberScreenSaver.
+  - It adds an entry to Windows' list of installed apps, so the
+    Software can be removed from Settings > Apps.
+  - It creates %ProgramData%\KWTechSolutions\CyberScreenSaver for its
+    logs. Before it replaces or removes a file it copies the earlier
+    one to that folder's "previous" subfolder, and it stops without
+    changing anything if it cannot.
+  - It does not change which screensaver Windows uses. You choose that
+    yourself in Screen Saver Settings.
+Removing the Software from Settings > Apps deletes the files, the
+copies in "previous" and the entry listed above. It leaves the log
+files, and each user's effect choices and downloaded data, in place.
+
+WHILE IT RUNS, THE SCREENSAVER:
+  - Saves each user's per-monitor effect choices under
+    HKEY_CURRENT_USER\Software\CyberScreenSaver.
+  - Writes a log automatically. Each run appends what it started, what
+    it read or downloaded, and any error, as it happens, to a daily
+    file in %ProgramData%\KWTechSolutions\CyberScreenSaver\logs. The
+    file remains on that computer; nothing is transmitted anywhere.
+
+SOME EFFECTS READ FROM YOUR NETWORK, THE INTERNET, OR THIS COMPUTER,
+AND ONLY WHEN YOU CHOOSE THEM FOR A MONITOR. Live network, Radar and
+War map use the network only while the screensaver runs full screen,
+never in the small Settings preview:
+  - LIVE NETWORK and RADAR SCAN YOUR LOCAL NETWORK. Every 30 seconds
+    they read this computer's ARP table and send a ping (ICMP echo)
+    request to addresses on this computer's local /24 subnet: those
+    ending .1 to .30, eleven further fixed addresses (.100, .110, .150,
+    .200, .247, .248 and .250 to .254), the default gateway, and every
+    device already in the ARP table. For each device that answers they
+    look up its name with a reverse DNS query and, when that finds
+    none, a NetBIOS name query sent to the device. Scanning a network
+    you are not authorized to manage may break that network's rules or
+    the law. Choose these effects only on networks you are authorized
+    to scan.
+  - WAR MAP DOWNLOADS PUBLIC DATA FROM THE INTERNET. It downloads event
+    files published by The GDELT Project from data.gdeltproject.org
+    over plain HTTP: up to the last 24 hours of files (about 3 to 4 MB)
+    when it starts, then one new file every 15 minutes. The files are
+    kept for 25 hours in %LOCALAPPDATA%\KWTechSolutions\CyberScreenSaver\
+    gdelt. Like any web request, a download reveals this computer's
+    public IP address to that server. The events are read from news
+    reports by a computer and are not verified; the map can show
+    places, names and descriptions of fighting, assaults and protests.
+  - SYSTEM MONITOR READS THIS COMPUTER whenever it is shown, including
+    the Settings preview: processor, memory, graphics,
+    disk and network activity, the names of running programs, drive
+    sizes, and the computer's name, and shows them on screen. It sends
+    nothing anywhere.
+  - AI CORE READS THIS COMPUTER whenever it is shown, including the
+    Settings preview. It runs the same reader as System monitor, so
+    the same items listed above are read, and it shows only the
+    processor load, in total and per processor, colouring its display
+    by it. It sends nothing anywhere.
+  - DAY/NIGHT CLOCK reads only this computer's clock and Windows'
+    time-zone rules.
+
+EVERYTHING THE OTHER EFFECTS SHOW IS MADE UP FOR DISPLAY. The
+Intrusion terminal, Security console, Threat map and Data net show
+invented intrusions, doors, badges, alarms, attacks and network
+traffic. They do not detect, monitor, block, record or report
+anything real, and they are not a security product.
+
+You are responsible for maintaining a current, tested FULL SYSTEM
+BACKUP of every machine this Software changes. A configuration export,
+a settings file, or any file this Software writes is not a backup.
+
+
+2. LICENSE - FREE
+-----------------
+CyberScreenSaver is free. It needs no license key and there is no
+charge for it. KW Tech Solutions LLC grants you a non-exclusive
+license to install and use it, free of charge, on computers you own
+or are authorized to administer.
+
+You may copy and share the Software with others free of charge, but
+only as the original, unmodified download: the signed setup program
+together with this LICENSE.txt, the README.txt and the manual,
+unchanged. You may not sell it or charge for it, modify it, decompile
+or reverse engineer it except to the extent the law expressly
+permits, or remove or change any of its notices. Each person who
+installs it accepts this agreement for themselves.
+
+
+3. SUPPORT
+----------
+Support covers THIS SOFTWARE ONLY: installation, removal, and the
+operation of the Software itself. It does not extend to your computer,
+your network, or any system or data the Software reads, and does not
+include diagnosing, repairing, or advising on your environment.
+Support is provided at KW Tech Solutions LLC's discretion and is not a
+maintenance, consulting, or administration service. Contact
+support@kingwerx.com.
+
+
+4. NO WARRANTY
+--------------
+This software is provided "AS IS" and "AS AVAILABLE", without warranty
+of any kind, either express or implied, including but not limited to the
+implied warranties of merchantability, fitness for a particular purpose,
+and non-infringement. KW Tech Solutions LLC does not warrant that the
+software will be error-free or uninterrupted, that any operation it
+performs will succeed or be reversible, or that any data, configuration,
+or system will be preserved. You assume the entire risk of using it.
+
+KW Tech Solutions LLC does not warrant that any information the
+Software displays - including network devices, system measurements,
+and news events - is complete, current, or accurate.
+
+No statement, example, screenshot, or description in the Software, its
+manual, its README, its website, its store listing, or any other
+documentation or marketing material creates a warranty or expands the
+scope of this agreement. Where any such statement conflicts with this
+section, THIS SECTION GOVERNS.
+
+
+5. LIMITATION OF LIABILITY
+--------------------------
+IN NO EVENT shall KW Tech Solutions LLC, its owners, authors,
+distributors, or anyone associated with the creation or distribution of
+this software be liable for any damages of any kind, including but not
+limited to:
+
+  - Loss, corruption, or destruction of data or configuration
+  - Loss of system, service, or domain functionality
+  - Service interruption, downtime, or authentication failure
+  - Loss of business, profits, or revenue, or business interruption
+  - Any direct, indirect, incidental, consequential, special,
+    punitive, or exemplary damages
+
+arising from or related to the use of, or inability to use, this
+software, even if advised of the possibility of such damages. You use
+the software entirely at your own risk. Where liability cannot be
+excluded by law, KW Tech Solutions LLC's total liability is limited to
+the amount you paid for the license.
+
+
+6. YOUR RESPONSIBILITIES
+------------------------
+You acknowledge and agree that:
+  - You understand what this Software does and the changes it makes,
+    as described in section 1.
+  - You have a current, tested FULL SYSTEM BACKUP of the computer you
+    install it on, and will not rely on this Software as your only copy
+    of any data.
+  - You will verify anything the Software shows before relying on it,
+    and you will choose the Live network and Radar effects only on
+    networks you are authorized to scan.
+  - You will run the Software only on systems you are authorized to
+    manage.
+  - You will not hold KW Tech Solutions LLC, its owners, authors, or
+    distributors liable for any damages, data loss, or operational
+    impact.
+
+
+7. THIRD-PARTY DATA AND TRADEMARKS
+----------------------------------
+No third-party software is redistributed with the Software.
+
+The War map shows data from The GDELT Project (gdeltproject.org),
+which permits its use with credit; the credit is shown on screen. The
+GDELT Project does not endorse this Software. The world maps are made
+with Natural Earth (naturalearthdata.com), which is in the public
+domain.
+
+Microsoft and Windows are trademarks of Microsoft Corporation.
+CyberScreenSaver is an independent product of KW Tech Solutions LLC
+and is not affiliated with, authorized, sponsored, or endorsed by
+Microsoft or The GDELT Project.
+
+
+8. GENERAL
+----------
+This agreement is governed by the laws of the State of Texas, USA,
+without regard to its conflict-of-laws rules. If any provision is held
+unenforceable, the remaining provisions remain in full force and
+effect.
+
+Copyright (c) 2026 KW Tech Solutions LLC. All rights reserved.
+Support: support@kingwerx.com
+================================================================
